@@ -45,6 +45,7 @@ public class MainActivity extends ActionBarActivity {
 
     public void initSimulKeyboard() {
         tv_inputOutput = (TextView)findViewById(R.id.tv_display);
+        tv_inputOutput.setText(0);
         btn_back = (ImageButton)findViewById(R.id.ib_back);
         btn_delete = (ImageButton)findViewById(R.id.ib_delete);
         btn_help = (ImageButton)findViewById(R.id.ib_help);
