@@ -4,6 +4,8 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Stack;
 
 import constant.enum_calculation_digit;
 import constant.enum_feedback;
@@ -15,7 +17,7 @@ public class CalculationModule {
 
     private double result;
 //    private static Stack inputStack;//stack storing the input
-    private double operands[];//stack storing the operators
+//    private double operands[];//stack storing the operators
     enum CALCULATORSTATE {
         ON_ENTERING,
         JUST_RESULT_OUT
@@ -67,6 +69,7 @@ public class CalculationModule {
     private static final char BACKSPACE = 'B';
     private static final char OK = '=';
     private static final char EMPTY = 'E';
+    private static final String DIVISORZEROERROR = "DE";
 //    private static final char INVALIDINPUT = 'F';
 
     //Static field
@@ -96,6 +99,7 @@ public class CalculationModule {
     private char lastChar; // last input char
     private ArrayList<Double> operandList; // Premier operands arraylist without calculation priority
     private ArrayList<Character> operatorList;//Premier operator arraylist without calculation priority
+    private List inputQueue;
 
 
 
@@ -112,8 +116,9 @@ public class CalculationModule {
      * Constructor of the class
      */
     public CalculationModule(){
-        operands = new double[0];
+//        operands = new double[0];
 //        inputStack = new Stack();
+        inputQueue = new ArrayList<String>();
         result = 0.0;
         calculatorState = CALCULATORSTATE.ON_ENTERING;
         operandList = new ArrayList<Double>();
@@ -181,6 +186,8 @@ public class CalculationModule {
     Handle deleting
      */
     private void handleBackspace() {
+        if (!inputQueue.isEmpty())
+            inputQueue.remove(inputQueue.size()-1);
         if (OPERANDS.contains(lastChar) ){
             if ( tempOperand.isEmpty() && !operandList.isEmpty()) {
                 String tempS = operandList.get(operandList.size()-1).toString();
@@ -216,18 +223,103 @@ public class CalculationModule {
     private double Calculate() {
         //TODO
 
-        ArrayList<Integer> CalSignQueue = sortSignIndex();
-        result = operandList.get(CalSignQueue.get(0));
-        Iterator<Character> calculIterator = operatorList.iterator();
-        for (char sign = calculIterator.next(); calculIterator.hasNext();calculIterator.next()){
-            //TODO
+//        ArrayList<Integer> CalSignQueue = sortSignIndex();
+//        result = operandList.get(CalSignQueue.get(0));
+//        Iterator<Integer> calculIterator = CalSignQueue.iterator();
+
+        Iterator calcuIterator = inputQueue.iterator();
+        if (OPERATORS.contains(calcuIterator.next())){
+            Log.e("FormulaError","Input queue invalid");
+            return Double.MIN_VALUE;
         }
+        Stack<String> calculStack = new Stack();
+        String cal = (String) calcuIterator.next();
+
+        boolean isOperand = true;
+        while ( calcuIterator.hasNext()){
+            if (isOperand){
+                calculStack.push(cal);
+                isOperand = false;
+            }else if (cal.equals("*") || cal.equals("/")){
+                double op1 = Double.parseDouble(calculStack.pop());
+                String opera = cal;
+                double op2 = Double.parseDouble((String) calcuIterator.next());
+                String tempResult = oneStepCal(op1,opera,op2);
+                calculStack.push(tempResult);
+                isOperand = false;
+            }else {
+                calculStack.push(cal);
+                isOperand = true;
+            }
+            cal= (String) calcuIterator.next();
+        }
+        double op1,op2;
+        String opera;
+        if (calculStack.size()!=1){
+            op1= Double.NaN;
+            op2 = Double.parseDouble(calculStack.pop());
+            opera = calculStack.pop();
+            boolean finished = false;
+            while(!finished){
+                op1 = Double.parseDouble(calculStack.pop());
+                op2 = Double.parseDouble(oneStepCal(op1,opera,op2));
+                if (!calculStack.empty() && calculStack.size() >=2){
+                    opera = calculStack.pop();
+                    op1 = Double.parseDouble(calculStack.pop());
+                }else if (calculStack.empty()){
+                    finished = true;
+                    return op2;
+                }else {
+
+                    String error = calculStack.pop();
+                    Log.e("FormulaErro", error);
+                    return Double.MIN_VALUE;
+                }
+            }
+        }else result = Double.parseDouble(calculStack.pop());
+
+//        if (operandList.size()!= operatorList.size()+1) {
+//            Log.e("WrongFormulaSizeErro", "operand list size: " +
+//                    "" + operandList.size() + " operator list size: " + operatorList.size());
+//            return Double.MIN_VALUE;
+//        }
+//        for (int sign = calculIterator.next(); calculIterator.hasNext();calculIterator.next()){
+
+//        }q
+
         calculatorState = CALCULATORSTATE.JUST_RESULT_OUT;
         operandList.clear();
         operatorList.clear();
         return result;
     }
 
+    private String oneStepCal(double op1, String opera, double op2) {
+        double tempResult = Double.NaN;
+        switch (opera){
+            case "+":
+                tempResult = op1+op2;
+                break;
+            case "-":
+                tempResult = op1 - op2;
+                break;
+            case "*":
+                tempResult = op1*op2;
+                break;
+            case "/":
+                if (op2 == 0)
+                    return DIVISORZEROERROR;
+                tempResult = op1/op2;
+                break;
+            default:break;
+        }
+        return Double.toString(tempResult);
+    }
+
+    /**
+     * Get the calculation sign index by priority
+     * from the operator list.
+     * @return
+     */
     private ArrayList<Integer> sortSignIndex() {
 
 //        for (Iterator iterator = operatorList.iterator();iterator.hasNext();iterator.next()){
@@ -300,10 +392,13 @@ public class CalculationModule {
 
                 if ( OPERANDS.contains(lastChar) && !tempOperand.equals("-") && !tempOperand.equals(".")) {
                     operandList.add(Double.parseDouble(tempOperand)); // Current operand pushed
+                    inputQueue.add(Double.parseDouble(tempOperand));
                     tempOperand = ""; // Current operand flag cleared
                     operatorList.add(currentChar); // Current operator pushed
+                    inputQueue.add(currentChar);
                     }else if (OPERATORS.contains(lastChar)){
                     operatorList.set(operatorList.size()-1, currentChar);
+                    inputQueue.set(inputQueue.size()-1,currentChar); // if last input is also an operator, we replace
                 }
                 lastChar = currentChar;
             }
