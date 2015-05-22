@@ -86,7 +86,7 @@ public class CalculationModule {
 //    private int lastInput = -1;
 
 //    private boolean IsResultGetsIntoCalculation = false;
-    private String tempOperand = null;//Current forging operand
+    private String tempOperand = "";//Current forging operand
 
     private void setLastChar(char lastChar) {
         this.lastChar = lastChar;
@@ -99,6 +99,18 @@ public class CalculationModule {
     private char lastChar; // last input char
     private ArrayList<Double> operandList; // Premier operands arraylist without calculation priority
     private ArrayList<Character> operatorList;//Premier operator arraylist without calculation priority
+
+    public String getInputQueue() {
+        Iterator inputQueueIterator = inputQueue.iterator();
+        String returnQueue = "";
+        while (inputQueueIterator.hasNext()){
+            returnQueue += inputQueueIterator.next();
+        }
+        if (!tempOperand.isEmpty())
+            returnQueue+=tempOperand;
+        return returnQueue;
+    }
+
     private List inputQueue;
 
 
@@ -123,6 +135,7 @@ public class CalculationModule {
         calculatorState = CALCULATORSTATE.ON_ENTERING;
         operandList = new ArrayList<Double>();
         operatorList = new ArrayList<Character>();
+        lastChar = EMPTY;
     }
 
     /**
@@ -411,8 +424,10 @@ public class CalculationModule {
      * @return
      */
     private boolean tempOperandDecimalsFull() {
+        if (tempOperand.isEmpty()|| tempOperand.length()==1||!tempOperand.contains(".") )
+            return false;
         String[] operandSet = tempOperand.split(".");
-        if (operandSet[1].length() >= 2)
+        if (operandSet.length>1 && operandSet[1].length() >= 2)
             return true;
         return false;
     }

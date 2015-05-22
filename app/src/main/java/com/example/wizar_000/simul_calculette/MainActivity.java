@@ -108,66 +108,70 @@ public class MainActivity extends ActionBarActivity {
                     handleDisplay(enterFeedback, '0');
                     break;
                 case R.id.b_digit_1:
-                    calculationModule.GetInput('1');
+                    enterFeedback= calculationModule.GetInput('1');
                     handleDisplay(enterFeedback, '1');
                     break;
                 case R.id.b_digit_2:
-                    calculationModule.GetInput('2');
+                    enterFeedback= calculationModule.GetInput('2');
                     handleDisplay(enterFeedback, '2');
                     break;
                 case R.id.b_digit_3:
-                    calculationModule.GetInput('3');
+                    enterFeedback= calculationModule.GetInput('3');
                     handleDisplay(enterFeedback, '3');
                     break;
                 case R.id.b_digit_4:
-                    calculationModule.GetInput('4');
+                    enterFeedback= calculationModule.GetInput('4');
                     handleDisplay(enterFeedback, '4');
                     break;
                 case R.id.b_digit_5:
-                    calculationModule.GetInput('5');
+                    enterFeedback= calculationModule.GetInput('5');
                     handleDisplay(enterFeedback, '5');
                     break;
                 case R.id.b_digit_6:
-                    calculationModule.GetInput('6');
+                    enterFeedback= calculationModule.GetInput('6');
                     handleDisplay(enterFeedback, '6');
                     break;
                 case R.id.b_digit_7:
-                    calculationModule.GetInput('7');
+                    enterFeedback= calculationModule.GetInput('7');
                     handleDisplay(enterFeedback, '7');
                     break;
                 case R.id.b_digit_8:
-                    calculationModule.GetInput('8');
+                    enterFeedback= calculationModule.GetInput('8');
                     handleDisplay(enterFeedback, '8');
                     break;
                 case R.id.b_digit_9:
-                    calculationModule.GetInput('9');
+                    enterFeedback= calculationModule.GetInput('9');
                     handleDisplay(enterFeedback, '9');
                     break;
+                case R.id.b_digit_star:
+                    enterFeedback = calculationModule.GetInput('.');
+                    handleDisplay(enterFeedback, '.');
+                    break;
                 case R.id.ib_down:
-                    calculationModule.GetInput('-');
+                    enterFeedback= calculationModule.GetInput('-');
                     handleDisplay(enterFeedback, '-');
                     break;
                 case R.id.ib_up:
-                    calculationModule.GetInput('+');
+                    enterFeedback= calculationModule.GetInput('+');
                     handleDisplay(enterFeedback, '+');
                     break;
                 case R.id.ib_left:
-                    calculationModule.GetInput('*');
+                    enterFeedback= calculationModule.GetInput('*');
                     handleDisplay(enterFeedback, '*');
                     break;
                 case R.id.ib_right:
-                    calculationModule.GetInput('/');
+                    enterFeedback= calculationModule.GetInput('/');
                     handleDisplay(enterFeedback, '/');
                     break;
                 case R.id.ib_delete:
-                    calculationModule.GetInput('B');
+                    enterFeedback= calculationModule.GetInput('B');
                     handleDisplay(enterFeedback, 'B');
                     break;
                 case R.id.ib_back:
                     finish();
                     break;
                 case R.id.b_ok:
-                    calculationModule.GetInput('=');
+                    enterFeedback= calculationModule.GetInput('=');
                     double result = calculationModule.getResult();
                     if (result <= Double.MIN_VALUE){
                         Toast.makeText(getApplicationContext(), "Calculator error",
@@ -186,12 +190,15 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void handleDisplay(enum_feedback enterFeedback, char input) {
+        if (onScreen == "0.0")
+            onScreen ="";
         switch (enterFeedback){
             case INVALID_INPUT:
                 speakOut("Wrong input");
                 break;
             case VALID_INPUT:
                 onScreen+=input;
+                onScreen = calculationModule.getInputQueue();
                 tv_inputOutput.setText(onScreen);
                 speakOut(input+"");
                 break;
