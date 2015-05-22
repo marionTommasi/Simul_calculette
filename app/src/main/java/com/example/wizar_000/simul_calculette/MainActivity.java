@@ -176,8 +176,7 @@ public class MainActivity extends ActionBarActivity {
                     if (result <= Double.MIN_VALUE){
                         Toast.makeText(getApplicationContext(), "Calculator error",
                                 Toast.LENGTH_SHORT).show();
-                    }
-                    handleDisplay(enterFeedback, '=');
+                    }else tv_inputOutput.setText(result+"");
                     break;
 
 

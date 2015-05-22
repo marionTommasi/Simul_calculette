@@ -2,6 +2,7 @@ package com.example.wizar_000.simul_calculette;
 
 import android.util.Log;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +42,8 @@ public class CalculationModule {
                 add('.');
                 add('+');
                 add('=');
+                add('B');
+                add('N');
             }};
 
     private static ArrayList<Character> OPERANDS = new ArrayList<Character>(){{
@@ -120,6 +123,10 @@ public class CalculationModule {
      * @return
      */
     public double getResult() {
+        BigDecimal b = new BigDecimal(result);
+        int saveBitNum = 2;
+        result = b.setScale(saveBitNum,BigDecimal.ROUND_HALF_UP).doubleValue();
+        inputQueue.clear();
         return result;
     }
 
@@ -152,6 +159,15 @@ public class CalculationModule {
         else if (lastChar == OK && arg == OK)
             return enum_feedback.REQUEST_RESULT;
         else if (arg == OK){
+            if (OPERATORS.contains(lastChar)){
+                inputQueue.remove(inputQueue.size()-1);
+            }else{
+                if (!tempOperand.isEmpty() && !tempOperand.equals("-")){
+                    inputQueue.add(tempOperand);
+                }
+                tempOperand = "";
+                lastChar = '=';
+            }
             Calculate();
             return enum_feedback.VALID_INPUT;
         }else if (arg == BACKSPACE){
@@ -241,22 +257,26 @@ public class CalculationModule {
 //        Iterator<Integer> calculIterator = CalSignQueue.iterator();
 
         Iterator calcuIterator = inputQueue.iterator();
-        if (OPERATORS.contains(calcuIterator.next())){
+        String cal;
+        cal = calcuIterator.next().toString();
+        if (OPERATORS.contains(cal)){
             Log.e("FormulaError","Input queue invalid");
             return Double.MIN_VALUE;
         }
         Stack<String> calculStack = new Stack();
-        String cal = (String) calcuIterator.next();
+
 
         boolean isOperand = true;
+        double op1,op2;
+        String opera;
         while ( calcuIterator.hasNext()){
             if (isOperand){
                 calculStack.push(cal);
                 isOperand = false;
             }else if (cal.equals("*") || cal.equals("/")){
-                double op1 = Double.parseDouble(calculStack.pop());
-                String opera = cal;
-                double op2 = Double.parseDouble((String) calcuIterator.next());
+                op1 = Double.parseDouble(calculStack.pop());
+                opera = cal;
+                op2 = Double.parseDouble(calcuIterator.next().toString());
                 String tempResult = oneStepCal(op1,opera,op2);
                 calculStack.push(tempResult);
                 isOperand = false;
@@ -264,10 +284,10 @@ public class CalculationModule {
                 calculStack.push(cal);
                 isOperand = true;
             }
-            cal= (String) calcuIterator.next();
+            if (calcuIterator.hasNext())
+                cal= calcuIterator.next().toString();
         }
-        double op1,op2;
-        String opera;
+
         if (calculStack.size()!=1){
             op1= Double.NaN;
             op2 = Double.parseDouble(calculStack.pop());
@@ -279,9 +299,14 @@ public class CalculationModule {
                 if (!calculStack.empty() && calculStack.size() >=2){
                     opera = calculStack.pop();
                     op1 = Double.parseDouble(calculStack.pop());
+                    if (calculStack.empty()) {
+                        result = Double.parseDouble(oneStepCal(op1, opera, op2));
+                        finished = true;
+                    }
                 }else if (calculStack.empty()){
                     finished = true;
-                    return op2;
+                   result = op2;
+//                    return op2;
                 }else {
 
                     String error = calculStack.pop();
@@ -299,7 +324,7 @@ public class CalculationModule {
 //        for (int sign = calculIterator.next(); calculIterator.hasNext();calculIterator.next()){
 
 //        }q
-
+        Log.e("ResultOut",result+"");
         calculatorState = CALCULATORSTATE.JUST_RESULT_OUT;
         operandList.clear();
         operatorList.clear();
