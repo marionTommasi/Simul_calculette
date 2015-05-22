@@ -173,7 +173,7 @@ public class MainActivity extends ActionBarActivity {
                 case R.id.b_ok:
                     enterFeedback= calculationModule.GetInput('=');
                     double result = calculationModule.getResult();
-                    if (result <= Double.MIN_VALUE){
+                    if (Math.abs(result) <= Double.MIN_VALUE){
                         Toast.makeText(getApplicationContext(), "Calculator error",
                                 Toast.LENGTH_SHORT).show();
                     }else tv_inputOutput.setText(result+"");

@@ -117,7 +117,6 @@ public class CalculationModule {
     private List inputQueue;
 
 
-
     /**
      * Getter of Result
      * @return
@@ -284,8 +283,12 @@ public class CalculationModule {
                 calculStack.push(cal);
                 isOperand = true;
             }
-            if (calcuIterator.hasNext())
+            if (calcuIterator.hasNext()){
                 cal= calcuIterator.next().toString();
+                if (!calcuIterator.hasNext())
+                    calculStack.push(cal);
+            }
+
         }
 
         if (calculStack.size()!=1){
