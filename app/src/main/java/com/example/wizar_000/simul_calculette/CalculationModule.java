@@ -100,8 +100,8 @@ public class CalculationModule {
     }
 
     private char lastChar; // last input char
-    private ArrayList<Double> operandList; // Premier operands arraylist without calculation priority
-    private ArrayList<Character> operatorList;//Premier operator arraylist without calculation priority
+//    private ArrayList<Double> operandList; // Premier operands arraylist without calculation priority
+//    private ArrayList<Character> operatorList;//Premier operator arraylist without calculation priority
 
     public String getInputQueue() {
         Iterator inputQueueIterator = inputQueue.iterator();
@@ -122,6 +122,8 @@ public class CalculationModule {
      * @return
      */
     public double getResult() {
+        if (result == 0)
+            result = 0.0;
         BigDecimal b = new BigDecimal(result);
         int saveBitNum = 2;
         result = b.setScale(saveBitNum,BigDecimal.ROUND_HALF_UP).doubleValue();
@@ -139,8 +141,8 @@ public class CalculationModule {
         inputQueue = new ArrayList<String>();
         result = 0.0;
         calculatorState = CALCULATORSTATE.ON_ENTERING;
-        operandList = new ArrayList<Double>();
-        operatorList = new ArrayList<Character>();
+//        operandList = new ArrayList<Double>();
+//        operatorList = new ArrayList<Character>();
         lastChar = EMPTY;
     }
 
@@ -162,7 +164,13 @@ public class CalculationModule {
                 inputQueue.remove(inputQueue.size()-1);
             }else{
                 if (!tempOperand.isEmpty() && !tempOperand.equals("-")){
-                    inputQueue.add(tempOperand);
+                    if (tempOperand.equals(".")){
+                        tempOperand="";
+                        if (!inputQueue.isEmpty())
+                            inputQueue.remove(inputQueue.size()-1);
+                    }
+
+                    else inputQueue.add(tempOperand);
                 }
                 tempOperand = "";
                 lastChar = '=';
@@ -183,8 +191,11 @@ public class CalculationModule {
                         tempOperand = "0.";
                     else tempOperand = temp;
                 }else if(OPERATORS.contains(arg)){
-                    operatorList.add(arg);//Push the operator into operator list
-                    operandList.add(result); // Push the last result into operand list
+                    inputQueue.clear();
+                    inputQueue.add(result);
+                    inputQueue.add(arg);
+//                    operatorList.add(arg);//Push the operator into operator list
+//                    operandList.add(result); // Push the last result into operand list
                 }
                 lastChar = arg; // set last input flag
                 break;
@@ -214,32 +225,58 @@ public class CalculationModule {
     Handle deleting
      */
     private void handleBackspace() {
-        if (!inputQueue.isEmpty())
-            inputQueue.remove(inputQueue.size()-1);
+        if (inputQueue.isEmpty()&&tempOperand.isEmpty()){
+            result = 0.0;
+            return;
+        }
+
+//            inputQueue.remove(inputQueue.size()-1);
         if (OPERANDS.contains(lastChar) ){
-            if ( tempOperand.isEmpty() && !operandList.isEmpty()) {
-                String tempS = operandList.get(operandList.size()-1).toString();
-                tempS = tempS.substring(0,tempS.length()-1);
-
-                if (tempS.isEmpty() || tempS.equals("-")){ // if there remains just the negative sigh, remove this element.
-                    operandList.remove(operandList.size()-1);
+            if (!tempOperand.isEmpty())
+                tempOperand = tempOperand.substring(0,tempOperand.length()-1);
+            else {
+                String tempString = inputQueue.get(inputQueue.size()-1).toString();
+                if (OPERATORS.contains(tempString))
+                    inputQueue.remove(inputQueue.size()-1);
+                else {
+                   tempString= tempString.substring(0,tempString.length()-1);
+                    if (!tempString.isEmpty())
+                        inputQueue.set(inputQueue.size()-1,tempString);
+                    else inputQueue.remove(inputQueue.size()-1);
                 }
-
-                try{
-                    double tempD = Double.parseDouble(tempS);
-                    operandList.set(operandList.size()-1,tempD);
-                }catch (NumberFormatException e){
-                    Log.e("DoubleExcption","double parse exception");
-                }
-
-            }else if (tempOperand.isEmpty()&& operandList.isEmpty()){
-                Log.e("DeleteError","tempOperand null and operandList null");
-            }else{
-                tempOperand = tempOperand.substring(0,tempOperand.length()-1);//trim the last element
             }
-        }else if (OPERATORS.contains(lastChar) && !operatorList.isEmpty()){
-            operatorList.remove(operatorList.size()-1);
-        }else Log.e("DeleteError","Last element null deleting exception!");
+
+//            if ( tempOperand.isEmpty() ) {//&& !operandList.isEmpty()
+//                String tempS = operandList.get(operandList.size()-1).toString();
+//                tempS = tempS.substring(0,tempS.length()-1);
+//
+//                if (tempS.isEmpty() || tempS.equals("-")){ // if there remains just the negative sigh, remove this element.
+//                    operandList.remove(operandList.size()-1);
+//                }
+//
+//                try{
+//                    double tempD = Double.parseDouble(tempS);
+//                    operandList.set(operandList.size()-1,tempD);
+//                }catch (NumberFormatException e){
+//                    Log.e("DoubleExcption","double parse exception");
+//                }
+//
+//            //}//else if (tempOperand.isEmpty()){//&& operandList.isEmpty()
+//              //  Log.e("DeleteError","tempOperand null and operandList null");
+//            }else{
+//                tempOperand = tempOperand.substring(0,tempOperand.length()-1);//trim the last element
+//            }
+//        }else if (OPERATORS.contains(lastChar) && !operatorList.isEmpty()){
+//            operatorList.remove(operatorList.size()-1);
+        } else {
+            inputQueue.remove(inputQueue.size()-1);
+        }
+        if (inputQueue.isEmpty())
+            return;
+        if (tempOperand.isEmpty()){
+            char[] tempCharset = inputQueue.get(inputQueue.size()-1).toString().toCharArray();
+            lastChar = tempCharset[tempCharset.length-1];
+        }else lastChar = tempOperand.charAt(tempOperand.length()-1);
     }
 
 
@@ -254,7 +291,10 @@ public class CalculationModule {
 //        ArrayList<Integer> CalSignQueue = sortSignIndex();
 //        result = operandList.get(CalSignQueue.get(0));
 //        Iterator<Integer> calculIterator = CalSignQueue.iterator();
-
+        if (inputQueue.size() == 0 && tempOperand.isEmpty())
+            return result = 0.0;
+        if (inputQueue.size() == 1)
+            return result = Double.parseDouble(inputQueue.get(0).toString());
         Iterator calcuIterator = inputQueue.iterator();
         String cal;
         cal = calcuIterator.next().toString();
@@ -277,6 +317,11 @@ public class CalculationModule {
                 opera = cal;
                 op2 = Double.parseDouble(calcuIterator.next().toString());
                 String tempResult = oneStepCal(op1,opera,op2);
+                if (tempResult == DIVISORZEROERROR ){
+                   Log.e("DivisionZeroErreur","Divisor zero error!");
+                    return result = 0.0;
+                }
+
                 calculStack.push(tempResult);
                 isOperand = false;
             }else {
@@ -290,34 +335,40 @@ public class CalculationModule {
             }
 
         }
+        Stack<String> inverseCalculStack = new Stack();
+        if (calculStack.empty())
+            return Double.MIN_VALUE;
+        else while(!calculStack.empty())
+            inverseCalculStack.push(calculStack.pop());
 
-        if (calculStack.size()!=1){
-            op1= Double.NaN;
-            op2 = Double.parseDouble(calculStack.pop());
-            opera = calculStack.pop();
+        op1 = Double.parseDouble(inverseCalculStack.pop());
+        if (inverseCalculStack.size()>=1){
+//            op1= Double.NaN;
+//            op2 = Double.parseDouble(calculStack.pop());
+            opera = inverseCalculStack.pop();
             boolean finished = false;
             while(!finished){
-                op1 = Double.parseDouble(calculStack.pop());
-                op2 = Double.parseDouble(oneStepCal(op1,opera,op2));
-                if (!calculStack.empty() && calculStack.size() >=2){
-                    opera = calculStack.pop();
-                    op1 = Double.parseDouble(calculStack.pop());
-                    if (calculStack.empty()) {
+                op2 = Double.parseDouble(inverseCalculStack.pop());
+                op1 = Double.parseDouble(oneStepCal(op1,opera,op2));
+                if (!inverseCalculStack.empty() && inverseCalculStack.size() >=2){
+                    opera = inverseCalculStack.pop();
+//                    op1 = Double.parseDouble(calculStack.pop());
+                    if (inverseCalculStack.empty()) {
                         result = Double.parseDouble(oneStepCal(op1, opera, op2));
                         finished = true;
                     }
-                }else if (calculStack.empty()){
+                }else if (inverseCalculStack.empty()){
                     finished = true;
-                   result = op2;
+                   result = op1;
 //                    return op2;
                 }else {
 
-                    String error = calculStack.pop();
+                    String error = inverseCalculStack.pop();
                     Log.e("FormulaErro", error);
                     return Double.MIN_VALUE;
                 }
             }
-        }else result = Double.parseDouble(calculStack.pop());
+        }else result = op1;//Double.parseDouble(inverseCalculStack.pop());
 
 //        if (operandList.size()!= operatorList.size()+1) {
 //            Log.e("WrongFormulaSizeErro", "operand list size: " +
@@ -329,8 +380,8 @@ public class CalculationModule {
 //        }q
         Log.e("ResultOut",result+"");
         calculatorState = CALCULATORSTATE.JUST_RESULT_OUT;
-        operandList.clear();
-        operatorList.clear();
+//        operandList.clear();
+//        operatorList.clear();
         return result;
     }
 
@@ -361,34 +412,34 @@ public class CalculationModule {
      * from the operator list.
      * @return
      */
-    private ArrayList<Integer> sortSignIndex() {
-
-//        for (Iterator iterator = operatorList.iterator();iterator.hasNext();iterator.next()){
+//    private ArrayList<Integer> sortSignIndex() {
+//
+////        for (Iterator iterator = operatorList.iterator();iterator.hasNext();iterator.next()){
+////        }
+//        ArrayList<Integer> orderedOperatorArray = new ArrayList<>();
+//        ArrayList<Character> tempOperatorList = operatorList;
+//        boolean sortNotFinish = true;
+//        int num = 0;
+//        while(sortNotFinish){
+//            int flagCounter = 0;
+//            char tempSign = tempOperatorList.get(flagCounter);
+//            while(flagCounter<tempOperatorList.size() && (tempSign != '*' || tempSign != '/')){
+//                flagCounter++;
+//                tempSign = tempOperatorList.get(flagCounter);
+//            }
+//            if (flagCounter != tempOperatorList.size() && (tempSign == '*' || tempSign == '/')){
+//                orderedOperatorArray.remove(flagCounter);
+//                orderedOperatorArray.add(flagCounter)  ; //Put this operator index into the first
+//                tempOperatorList.set(flagCounter, '0'); //Remove this operator index from the array
+//                num++;
+//            }else if (flagCounter == tempOperatorList.size())
+//                sortNotFinish = false;
 //        }
-        ArrayList<Integer> orderedOperatorArray = new ArrayList<>();
-        ArrayList<Character> tempOperatorList = operatorList;
-        boolean sortNotFinish = true;
-        int num = 0;
-        while(sortNotFinish){
-            int flagCounter = 0;
-            char tempSign = tempOperatorList.get(flagCounter);
-            while(flagCounter<tempOperatorList.size() && (tempSign != '*' || tempSign != '/')){
-                flagCounter++;
-                tempSign = tempOperatorList.get(flagCounter);
-            }
-            if (flagCounter != tempOperatorList.size() && (tempSign == '*' || tempSign == '/')){
-                orderedOperatorArray.remove(flagCounter);
-                orderedOperatorArray.add(flagCounter)  ; //Put this operator index into the first
-                tempOperatorList.set(flagCounter, '0'); //Remove this operator index from the array
-                num++;
-            }else if (flagCounter == tempOperatorList.size())
-                sortNotFinish = false;
-        }
-        for (int i=0;i<operatorList.size()-num;i++){ // Operator index order
-            orderedOperatorArray.add(i);
-        }
-        return orderedOperatorArray;
-    }
+//        for (int i=0;i<operatorList.size()-num;i++){ // Operator index order
+//            orderedOperatorArray.add(i);
+//        }
+//        return orderedOperatorArray;
+//    }
 
 
 
@@ -409,14 +460,16 @@ public class CalculationModule {
         if (lastChar == EMPTY){
 
             if (OPERANDS.contains(currentChar)){
-                tempOperand = currentInput;
+                if (currentInput.equals(enum_calculation_digit.N.toString()))
+                    XORNegativity();
+                else tempOperand = currentInput;
                 lastChar = currentChar;
             }else return;
         }else {
             if (OPERANDS.contains(currentChar)){
                 if (currentInput.equals(enum_calculation_digit.N.toString())){ // Negativity sign key
-                    XORNegativity(currentInput);
-                }else if (currentInput.equals(enum_calculation_digit.SIGN_DECIMAL_POINT.toString())){
+                    XORNegativity();
+                }else if (currentInput.equals(".")){//enum_calculation_digit.SIGN_DECIMAL_POINT.toString()
                     //Decimal point key input
                     if (!tempOperand.contains(".")) // If there are already a decimal sign, ignore it.
                         tempOperand = tempOperand.concat(currentInput);
@@ -428,18 +481,20 @@ public class CalculationModule {
                 }
                 lastChar = currentChar;
             }else if (OPERATORS.contains(currentChar)){
-                if (operandList.isEmpty() && tempOperand.isEmpty())
-                    return;
-
-                if ( OPERANDS.contains(lastChar) && !tempOperand.equals("-") && !tempOperand.equals(".")) {
-                    operandList.add(Double.parseDouble(tempOperand)); // Current operand pushed
+//                if (operandList.isEmpty() && tempOperand.isEmpty())
+//                    return;
+                if (OPERATORS.contains(lastChar)){ //if last char is an operator, and current char is also an operator, then replace
+//                    operatorList.set(operatorList.size()-1, currentChar);
+                    if (inputQueue.isEmpty())
+                        return;
+                    inputQueue.set(inputQueue.size()-1,currentChar);
+                } else  if ( OPERANDS.contains(lastChar) && !tempOperand.equals("-") && !tempOperand.equals(".")) {
+                    // if last char is a digit, and current char is an operator but not a negative sign
+//                    operandList.add(Double.parseDouble(tempOperand)); // Current operand pushed
                     inputQueue.add(Double.parseDouble(tempOperand));
                     tempOperand = ""; // Current operand flag cleared
-                    operatorList.add(currentChar); // Current operator pushed
+//                    operatorList.add(currentChar); // Current operator pushed
                     inputQueue.add(currentChar);
-                    }else if (OPERATORS.contains(lastChar)){
-                    operatorList.set(operatorList.size()-1, currentChar);
-                    inputQueue.set(inputQueue.size()-1,currentChar); // if last input is also an operator, we replace
                 }
                 lastChar = currentChar;
             }
@@ -454,7 +509,7 @@ public class CalculationModule {
     private boolean tempOperandDecimalsFull() {
         if (tempOperand.isEmpty()|| tempOperand.length()==1||!tempOperand.contains(".") )
             return false;
-        String[] operandSet = tempOperand.split(".");
+        String[] operandSet = tempOperand.split("\\.");
         if (operandSet.length>1 && operandSet[1].length() >= 2)
             return true;
         return false;
@@ -464,19 +519,21 @@ public class CalculationModule {
      * xor the operand negative sign
      * Negative sign is a specific button in the MIGICA BOX keyboard
      * Which represents the negativity inversion of the current operand
-     * @param negaSign
      */
-    private void XORNegativity(String negaSign) {
+    private void XORNegativity() {
 
         if (tempOperand.isEmpty()){
-            tempOperand = negaSign;// If temp operand is null, the first negative sign entering means pass it to negative
+            tempOperand = "-";// If temp operand is null, the first negative sign entering means pass it to negative
         }else {
-//            double tempD = Double.parseDouble(tempOperand);
+//
 //            String currentNegativity = tempD < 0 ? "-":"+";
-            if (!tempOperand.equals(negaSign))
-                tempOperand = "-";
+            if (!tempOperand.equals("-")){
+                double tempD = Double.parseDouble(tempOperand);
+                tempD= tempD*(-1);
+                tempOperand = Double.toString(tempD);
+            } else tempOperand = "";
         }
-
+        lastChar = 'N';
     }
 
 

@@ -8,9 +8,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import constant.*;
+import constant.enum_feedback;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -94,7 +93,7 @@ public class MainActivity extends ActionBarActivity {
         btn_digit_9.setOnClickListener(new ButtonClickedHandler());
         btn_opt_comma = (Button)findViewById(R.id.b_digit_star);
         btn_opt_comma.setOnClickListener(new ButtonClickedHandler());
-        btn_opt_pound = (Button)findViewById(R.id.b_digit_plus);
+        btn_opt_pound = (Button)findViewById(R.id.b_digit_negative);
         btn_opt_pound.setOnClickListener(new ButtonClickedHandler());
 
     }
@@ -147,6 +146,10 @@ public class MainActivity extends ActionBarActivity {
                     enterFeedback = calculationModule.GetInput('.');
                     handleDisplay(enterFeedback, '.');
                     break;
+                case R.id.b_digit_negative:
+                    enterFeedback= calculationModule.GetInput('N');
+                    handleDisplay(enterFeedback, 'N');
+                    break;
                 case R.id.ib_down:
                     enterFeedback= calculationModule.GetInput('-');
                     handleDisplay(enterFeedback, '-');
@@ -173,16 +176,12 @@ public class MainActivity extends ActionBarActivity {
                 case R.id.b_ok:
                     enterFeedback= calculationModule.GetInput('=');
                     double result = calculationModule.getResult();
-                    if (Math.abs(result) <= Double.MIN_VALUE){
-                        Toast.makeText(getApplicationContext(), "Calculator error",
-                                Toast.LENGTH_SHORT).show();
-                    }else tv_inputOutput.setText(result+"");
+//                    if (Math.abs(result) <= Double.MIN_VALUE){
+//                        Toast.makeText(getApplicationContext(), "Calculator error",
+//                                Toast.LENGTH_SHORT).show();
+//                    }else
+                        tv_inputOutput.setText(result+"");
                     break;
-
-
-
-
-
             }
         }
 
@@ -198,7 +197,9 @@ public class MainActivity extends ActionBarActivity {
             case VALID_INPUT:
                 onScreen+=input;
                 onScreen = calculationModule.getInputQueue();
-                tv_inputOutput.setText(onScreen);
+                if (onScreen.isEmpty())
+                    tv_inputOutput.setText("0.0");
+                else tv_inputOutput.setText(onScreen);
                 speakOut(input+"");
                 break;
             case REQUEST_RESULT:

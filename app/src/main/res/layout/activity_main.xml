@@ -16,7 +16,7 @@
         android:layout_alignParentStart="true"
         android:textIsSelectable="false"
         android:id="@+id/tv_display"
-        android:autoText="true"
+        android:autoText="false"
         android:textColor="#000000"
         android:text="0.0"
         android:gravity="right" />
@@ -231,7 +231,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:text="#+"
-        android:id="@+id/b_digit_plus"
+        android:id="@+id/b_digit_negative"
         android:layout_below="@+id/b_digit_9"
         android:layout_alignLeft="@+id/b_digit_9"
         android:layout_alignStart="@+id/b_digit_9" />
