@@ -1,6 +1,6 @@
 # Simul_calculette
 A calculator test project 
-/n Main features:
+Main features:
 Successive calculation with priority of multiplication and division but without parentheses;
 Entering acceptbility of two decimals;
 Also two decimals of result fraction precision;
