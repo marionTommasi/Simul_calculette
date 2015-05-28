@@ -175,12 +175,12 @@ public class MainActivity extends ActionBarActivity {
                     break;
                 case R.id.b_ok:
                     enterFeedback= calculationModule.GetInput('=');
-                    double result = calculationModule.getResult();
+                    String result = calculationModule.getResult();
 //                    if (Math.abs(result) <= Double.MIN_VALUE){
 //                        Toast.makeText(getApplicationContext(), "Calculator error",
 //                                Toast.LENGTH_SHORT).show();
 //                    }else
-                        tv_inputOutput.setText(result+"");
+                        tv_inputOutput.setText(result);
                     break;
             }
         }

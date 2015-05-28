@@ -3,6 +3,8 @@ package com.example.wizar_000.simul_calculette;
 import android.util.Log;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -103,6 +105,8 @@ public class CalculationModule {
 //    private ArrayList<Double> operandList; // Premier operands arraylist without calculation priority
 //    private ArrayList<Character> operatorList;//Premier operator arraylist without calculation priority
 
+    private NumberFormat format = new DecimalFormat("0.#");
+
     public String getInputQueue() {
         Iterator inputQueueIterator = inputQueue.iterator();
         String returnQueue = "";
@@ -121,14 +125,14 @@ public class CalculationModule {
      * Getter of Result
      * @return
      */
-    public double getResult() {
+    public String getResult() {
         if (result == 0)
             result = 0.0;
         BigDecimal b = new BigDecimal(result);
         int saveBitNum = 2;
         result = b.setScale(saveBitNum,BigDecimal.ROUND_HALF_UP).doubleValue();
         inputQueue.clear();
-        return result;
+        return format.format(result);
     }
 
 
@@ -491,7 +495,9 @@ public class CalculationModule {
                 } else  if ( OPERANDS.contains(lastChar) && !tempOperand.equals("-") && !tempOperand.equals(".")) {
                     // if last char is a digit, and current char is an operator but not a negative sign
 //                    operandList.add(Double.parseDouble(tempOperand)); // Current operand pushed
-                    inputQueue.add(Double.parseDouble(tempOperand));
+
+                    String formatedOperand = format.format(Double.parseDouble(tempOperand));
+                    inputQueue.add(formatedOperand);
                     tempOperand = ""; // Current operand flag cleared
 //                    operatorList.add(currentChar); // Current operator pushed
                     inputQueue.add(currentChar);
